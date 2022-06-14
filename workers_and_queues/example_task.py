@@ -1,27 +1,21 @@
 # Training settings
 import argparse
-from html.entities import name2codepoint
-from operator import sub
+from asyncio import sleep
 from clearml import Task
+import time
 
 
-def dummy_task(sleep_time):
-    import time
-    time.sleep(sleep_time)
+def create_template(sleep_time):
+    template_task = Task.init(
+        project_name=args.project_name,
+        task_name=f'template task',
+    )
+    settings = {'sleep_time': sleep_time}
+    template_task.connect(settings)
+    time.sleep(settings['sleep_time'])
+    template_task.close()
 
-class TaskFactory:
-    def __init__(self, project_name, task_name_prefix='example task', sleep_time=10):
-        self.project_name = project_name
-        self.task_name_prefix = task_name_prefix
-        self.sleep_time = sleep_time
-        self.task = Task.init(
-            project_name=self.project_name,
-            task_name=f'filler task factory'
-        )
-
-    def create_remote_task(self, task_name_suffix):
-        self.task.create_function_task(dummy_task, task_name=f'{self.task_name_prefix} {task_name_suffix}', kwargs={'sleep_time': self.sleep_time})
-
+    return template_task
 
 parser = argparse.ArgumentParser(description='Generate filler tasks')
 subparsers = parser.add_subparsers(dest='command', help='sub-command help')
@@ -53,8 +47,12 @@ if args.command == 'remove':
         task.close()
         task.delete()
 if args.command == 'send':
-    task_factory = TaskFactory(project_name=args.project_name, task_name_prefix='example task', sleep_time=args.sleep_time)
     for queue in args.queues:
+        template_task = create_template(0)
         for i in range(args.amount):
-            task_factory.create_remote_task(i)
-
+            filler_task = template_task.clone(
+                source_task=template_task.id,
+                name=f'example task {i}'
+            )
+            Task.enqueue(filler_task, queue_name=queue)
+        template_task.delete()
