@@ -5,14 +5,11 @@ from clearml import Task
 import time
 
 
-def create_template(sleep_time):
+def create_template():
     template_task = Task.init(
         project_name=args.project_name,
         task_name=f'template task',
     )
-    settings = {'sleep_time': sleep_time}
-    template_task.connect(settings)
-    time.sleep(settings['sleep_time'])
     template_task.close()
 
     return template_task
@@ -25,7 +22,7 @@ parser.add_argument('--project-name', type=str, required=True, help='Project nam
 
 # Send filler tasks
 send_parser = subparsers.add_parser(name='send', help='Send a bunch of filler tasks to the server')
-send_parser.add_argument('--amount', type=int, default=10,
+send_parser.add_argument('--amount', type=int, default=2,
                     help='The amount of tasks to create PER QUEUE')
 send_parser.add_argument('--queues', type=str, default=['default'], nargs='+',
                     help='Which queues to put filler tasks in')
@@ -48,11 +45,14 @@ if args.command == 'remove':
         task.delete()
 if args.command == 'send':
     for queue in args.queues:
-        template_task = create_template(0)
+        template_task = create_template()
         for i in range(args.amount):
             filler_task = template_task.clone(
                 source_task=template_task.id,
                 name=f'example task {i}'
             )
+            filler_task.set_parameter('Args/command', 'run')
             Task.enqueue(filler_task, queue_name=queue)
         template_task.delete()
+if args.command == 'run':
+    time.sleep(args.sleep_time)
