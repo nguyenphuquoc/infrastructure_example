@@ -22,7 +22,7 @@ scheduler.add_dataset_trigger(
     schedule_queue='services',
     name='Scientist #1 New Data Training',
     trigger_project='Project Data Scientist #1',
-    trigger_name='raw dataset'
+    trigger_name='raw_asteroid_dataset'
 )
 
 # Start the scheduler
