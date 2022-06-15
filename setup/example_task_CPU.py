@@ -8,7 +8,10 @@ from clearml import Task
 
 # Connecting ClearML with the current process,
 # from here on everything is logged automatically
-task = Task.init(project_name="Here Be Ops", task_name="Example Task CPU")
+task = Task.init(
+    project_name="Project Alice",
+    task_name="Model Training"
+)
 task.execute_remotely(queue_name='CPU Queue')
 
 print('Loading data...')

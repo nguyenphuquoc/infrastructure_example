@@ -78,7 +78,10 @@ def test(args, model, device, test_loader, epoch):
 def main():
     # Connecting ClearML with the current process,
     # from here on everything is logged automatically
-    task = Task.init(project_name='Here Be Ops', task_name='Example Task GPU')
+    task = Task.init(
+        project_name='Project Alice',
+        task_name='Model Training GPU'
+    )
     # Training settings
     parser = argparse.ArgumentParser(description='PyTorch MNIST Example')
     parser.add_argument('--batch-size', type=int, default=64, metavar='N',
